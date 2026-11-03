@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0e5a4b">
+  <meta name="robots" content="noindex">
+  <title>تسجيل حضور الطابور الصباحي</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="ci-page">
+    <div class="ci-shell">
+      <header class="ci-head">
+        <div class="ci-logo" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h11l-2 4 2 4H4"/><path d="m14 17 2 2 4-4"/></svg>
+        </div>
+        <p class="ci-school" id="schoolName">مدرسة الطالب الذكي الخاصة</p>
+        <p class="ci-sub">الحضور الذكي للطابور الصباحي</p>
+      </header>
+
+      <div class="ci-clock" aria-live="off">
+        <div class="t num" id="clockTime">--:--</div>
+        <div class="d" id="clockDate">&nbsp;</div>
+        <div class="small muted" id="clockNote"></div>
+      </div>
+
+      <section class="ci-card" id="view" aria-live="polite">
+        <p class="muted" style="text-align:center">جارٍ التحميل…</p>
+      </section>
+
+      <nav class="ci-footer" id="footer"></nav>
+    </div>
+  </main>
+  <script type="module" src="js/checkin.js"></script>
+</body>
+</html>

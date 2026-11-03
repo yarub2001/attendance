@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0e5a4b">
+  <meta name="robots" content="noindex">
+  <title>لوحة الحضور — الطابور الصباحي</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="vendor/qrcode.js" defer></script>
+</head>
+<body>
+  <!-- شاشة الدخول -->
+  <div id="loginView" class="login-wrap hidden">
+    <form id="loginForm" class="card login-card">
+      <div class="ci-logo" aria-hidden="true">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-6"/></svg>
+      </div>
+      <h1 style="text-align:center">لوحة إدارة الحضور</h1>
+      <p class="muted" style="text-align:center">للمديرة والمستخدمين المصرّح لهم فقط</p>
+      <div class="field"><label for="lEmail">البريد الإلكتروني</label><input id="lEmail" type="email" dir="ltr" autocomplete="username" required></div>
+      <div class="field"><label for="lPass">كلمة المرور</label><input id="lPass" type="password" dir="ltr" autocomplete="current-password" required></div>
+      <p class="form-error" id="lErr" role="alert"></p>
+      <button class="btn btn-primary btn-block" id="lBtn" type="submit">دخول</button>
+    </form>
+  </div>
+
+  <!-- رسالة عامة (غير مهيأ / لا صلاحية) -->
+  <div id="msgView" class="login-wrap hidden"><div class="card login-card" id="msgBox"></div></div>
+
+  <!-- التطبيق -->
+  <div id="appView" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V4"/><path d="M4 4h11l-2 4 2 4H4"/><path d="m14 17 2 2 4-4"/></svg>
+        </div>
+        <div>
+          <h1 id="schoolTitle">مدرسة الطالب الذكي الخاصة</h1>
+          <div class="sub">الحضور الذكي للطابور الصباحي</div>
+        </div>
+      </div>
+      <div class="row">
+        <span class="conn wait" id="conn" title="حالة الاتصال بقاعدة البيانات"><span class="dot"></span><span id="connText">جارٍ الاتصال…</span></span>
+        <span class="small" id="whoami"></span>
+        <button class="btn btn-ghost btn-sm" id="logoutBtn">خروج</button>
+      </div>
+    </header>
+    <nav class="tabs" role="tablist" id="tabs"></nav>
+    <main class="main" id="main"></main>
+  </div>
+
+  <script type="module" src="js/admin/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>ملصق رمز QR — الطابور الصباحي</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>body{background:#fff}</style>
+</head>
+<body>
+  <div class="poster">
+    <p class="muted" id="school" style="font-size:1.3rem;margin:0">مدرسة الطالب الذكي الخاصة</p>
+    <h1>تسجيل حضور الطابور الصباحي</h1>
+    <div class="qr-box" id="qr"></div>
+    <div class="steps">
+      <ol>
+        <li>افتح كاميرا هاتفك ووجّهها نحو الرمز.</li>
+        <li>اضغط على الرابط الذي يظهر.</li>
+        <li>اضغط «سجّل حضوري الآن».</li>
+      </ol>
+    </div>
+    <p class="url" id="url"></p>
+    <p class="small muted">التسجيل متاح فقط خلال وقت الطابور، ولكل معلم حسابه الخاص.</p>
+    <p class="no-print" style="margin-top:1rem"><button class="btn btn-primary" onclick="print()">طباعة</button></p>
+  </div>
+  <script src="vendor/qrcode.js"></script>
+  <script>
+    (function () {
+      var url = new URL('checkin', location.href).href;
+      var name = new URLSearchParams(location.search).get('name');
+      if (name) document.getElementById('school').textContent = name;
+      document.getElementById('url').textContent = url;
+      var qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+      document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 10, margin: 2, scalable: true });
+      var local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || location.protocol !== 'https:';
+      if (local) {
+        var w = document.createElement('p');
+        w.className = 'notice notice-bad no-print';
+        w.textContent = 'تحذير: هذا رابط محلي لا يعمل على هواتف المعلمين. افتحي هذه الصفحة من الرابط المنشور قبل الطباعة.';
+        document.querySelector('.poster').prepend(w);
+      }
+    })();
+  </script>
+</body>
+</html>
