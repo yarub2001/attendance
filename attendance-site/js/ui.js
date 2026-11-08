@@ -4,6 +4,17 @@ export const $ = (sel, root = document) => root.querySelector(sel);
 export const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
 
 /** إنشاء عنصر HTML بأمان (النصوص تُدرج كنص، لا كـ HTML) */
+// عند بناء الصفحات نمرّر أحيانًا أجزاءً اختيارية قيمتها null؛ المتصفح يطبعها
+// كلمة "null". هنا نتجاهلها في replaceChildren و append كما يفعل h().
+for (const proto of [Element.prototype, DocumentFragment.prototype]) {
+  for (const name of ['replaceChildren', 'append']) {
+    const original = proto[name];
+    proto[name] = function (...nodes) {
+      return original.apply(this, nodes.flat(Infinity).filter((n) => n != null && n !== false));
+    };
+  }
+}
+
 export function h(tag, attrs = {}, ...children) {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {

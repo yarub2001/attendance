@@ -2,11 +2,11 @@
 import {
   onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail,
   updatePassword, reauthenticateWithCredential, EmailAuthProvider,
-  doc, getDoc, runTransaction, serverTimestamp,
+  doc, getDoc, setDoc, serverTimestamp,
 } from '../vendor/firebase.js';
 import { auth, db, CONFIG_MISSING, USE_EMULATORS, arabicError } from './firebase.js';
 import {
-  syncServerTime, clockInfo, nowMs, todayKey, minutesOf, tsToMs, addDays,
+  syncServerTime, nowMs, todayKey, minutesOf, tsToMs, addDays,
   formatTimeSec, formatDateLong, formatTime, formatMinutes, formatKeyShort,
 } from './time.js';
 import { evaluateWindow } from './window.js';
@@ -263,12 +263,13 @@ async function doCheckIn(btn, codeInput) {
     }
 
     const ref = doc(db, 'attendance', `${dk}_${uid}`);
-    // معاملة آمنة: تقرأ السجل أولًا، ولا تُنشئه إلا إن لم يكن موجودًا
-    await runTransaction(db, async (tx) => {
-      const snap = await tx.get(ref);
-      if (snap.exists()) throw Object.assign(new Error('already'), { code: 'already' });
-      tx.set(ref, data);
-    });
+    // هل سجّل مسبقًا اليوم؟ (للرسالة فقط)
+    let before = null;
+    try { before = await getDoc(ref); } catch { /* نكمل؛ الخادم هو الحكم */ }
+    if (before?.exists()) throw Object.assign(new Error('already'), { code: 'already' });
+    // منع التكرار مضمون في الخادم: المعلم يستطيع «إنشاء» سجل اليوم فقط،
+    // وأي محاولة ثانية (ولو من جهاز آخر في اللحظة نفسها) تُعدّ «تعديلًا» فتُرفض.
+    await setDoc(ref, data);
     const saved = await getDoc(ref);
     state.record = saved.data();
     renderDone(state.record, true);
@@ -301,14 +302,34 @@ async function handleCheckInError(err) {
     else if (!w.ok) reason = w.msg;
     else if (state.settings?.requireDailyCode) reason = 'رمز اليوم غير صحيح أو لم تُحدّثه الإدارة لهذا اليوم.';
     else if (state.settings?.geo?.mode === 'require') reason = 'موقعك خارج نطاق المدرسة المسموح به.';
-    else if (!clockInfo().synced) reason = 'تحقّق من ضبط التاريخ والوقت في هاتفك ثم أعد المحاولة.';
-    else reason = 'لم تتحقق شروط التسجيل في الخادم. راجع الإدارة.';
+    else reason = await serverReason(todayKey());
     render();
     showReject(reason);
     return;
   }
   render();
   showReject(arabicError(err));
+}
+
+// يسأل الخادم عن كل شرط على حدة (قراءة فقط) ليعرض السبب الدقيق للرفض
+async function serverReason(dk) {
+  const probes = [
+    ['p1', 'حسابك غير مفعّل في قائمة المعلمين. راجع الإدارة.'],
+    [`p2~${dk}`, 'تاريخ هاتفك لا يطابق تاريخ اليوم. فعّل «التاريخ والوقت التلقائي» في الهاتف ثم أعد المحاولة.'],
+    ['p3', 'اليوم ليس يوم دوام حسب إعدادات أيام العمل.'],
+    ['p4', 'التسجيل موقوف حاليًا من الإدارة.'],
+    ['p5', 'لم تبدأ فترة التسجيل بعد.'],
+    ['p6', 'انتهت فترة التسجيل لهذا اليوم.'],
+    [`p7~${dk}`, 'اليوم مسجّل عطلة.'],
+  ];
+  for (const [id, msg] of probes) {
+    try { await getDoc(doc(db, 'probe', id)); }
+    catch (e) {
+      if (String(e.code).includes('permission-denied')) return `${msg} (رمز ${id.split('~')[0]})`;
+      return 'تعذّر الاتصال بالخادم. تحقّق من الإنترنت ثم أعد المحاولة.';
+    }
+  }
+  return 'رفض الخادم التسجيل. صوّر هذه الشاشة وأرسلها للإدارة. (رمز p0)';
 }
 
 function showReject(msg) {
